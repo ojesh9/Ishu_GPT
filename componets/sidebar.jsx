@@ -8,7 +8,8 @@ import ChatLable from './ChatLable';
 const Sidebar = ({ expand, setExpand }) => {
   const { openSignIn } = useClerk();
   const { user } = useAppContex();
-  const [openMenu,setOpenMenu] = useState({id : 0, open: false})
+  const [openMenu, setOpenMenu] = useState({ id: 0, open: false });
+
   return (
     <div
       className={`flex flex-col justify-between bg-[#212327] pt-7 transition-all z-50 max-md:absolute max-md:h-screen ${
@@ -30,7 +31,7 @@ const Sidebar = ({ expand, setExpand }) => {
           />
           <div
             onClick={() => setExpand(!expand)}
-            className="group relative flex items-center justify-center hover:bg-gray-500/20 transition-all duration-300 h-9 w-9 aspect-square rounded-lg cursor-pointer"
+            className="group relative flex items-center justify-center hover:bg-gray-500/20 transition-all duration-300 h-9 w-9 rounded-lg cursor-pointer"
           >
             <Image src={assets.menu_icon} alt="menu" className="md:hidden" />
             <Image
@@ -60,7 +61,7 @@ const Sidebar = ({ expand, setExpand }) => {
         {expand && (
           <div className="mt-8 text-white/25 text-sm">
             <p className="my-1">Recents</p>
-            <ChatLable openMenu ={openMenu} setOpenMenu={setOpenMenu} />
+            <ChatLable openMenu={openMenu} setOpenMenu={setOpenMenu} />
           </div>
         )}
       </div>
