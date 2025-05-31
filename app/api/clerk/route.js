@@ -1,16 +1,13 @@
-// app/api/webhook/route.ts or similar
 import { Webhook } from "svix";
-import connectDB from "@/config/b"; // Ensure this connects to your MongoDB Atlas
+import connectDB from "@/config/b";
 import User from "@/models/user";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function POST(req: Request) {
-  // ✅ Securely pull secret
-  const wh = new Webhook(process.env.SIGNING_SECRET as string);
-
-  // ✅ Get headers
+export async function POST(req) {
+  const wh = new Webhook(process.env.SIGNING_SECRET);
   const headerPayload = headers();
+
   const svixHeaders = {
     "svix-id": headerPayload.get("svix-id") || "",
     "svix-timestamp": headerPayload.get("svix-timestamp") || "",
@@ -18,14 +15,10 @@ export async function POST(req: Request) {
   };
 
   try {
-    // ✅ Parse payload
     const payload = await req.json();
     const body = JSON.stringify(payload);
+    const { data, type } = wh.verify(body, svixHeaders);
 
-    // ✅ Verify webhook signature
-    const { data, type } = wh.verify(body, svixHeaders) as any;
-
-    // ✅ Prepare user data
     const userData = {
       _id: data.id,
       email: data.email_addresses?.[0]?.email_address,
@@ -33,10 +26,8 @@ export async function POST(req: Request) {
       image: data.image_url || "",
     };
 
-    // ✅ Connect to MongoDB
     await connectDB();
 
-    // ✅ Handle events
     switch (type) {
       case "user.created":
         await User.create(userData);
@@ -51,13 +42,12 @@ export async function POST(req: Request) {
         break;
 
       default:
-        console.warn("Unhandled event type:", type);
-        break;
+        console.log("Unhandled webhook type:", type);
     }
 
-    return NextResponse.json({ message: "Webhook handled successfully" });
-  } catch (err: any) {
-    console.error("Webhook error:", err.message || err);
-    return new NextResponse("Webhook handler failed", { status: 400 });
+    return NextResponse.json({ message: "Event received" });
+  } catch (err) {
+    console.error("Webhook Error:", err.message || err);
+    return new NextResponse("Webhook error", { status: 400 });
   }
 }
